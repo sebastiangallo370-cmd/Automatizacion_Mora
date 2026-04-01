@@ -1,0 +1,2306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PréstaMo — Gestión de Préstamos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   VARIABLES Y RESET GLOBAL
+   ============================================================ */
+:root {
+  --bg:        #F7F5F0;
+  --surface:   #FFFFFF;
+  --surface2:  #F0EDE6;
+  --border:    #E0DBD0;
+  --accent:    #1A3A2A;
+  --accent2:   #2D6A4F;
+  --gold:      #C8973A;
+  --gold-lt:   #FBF0DC;
+  --danger:    #B83A3A;
+  --danger-lt: #FBEAEA;
+  --success:   #2D6A4F;
+  --success-lt:#E8F5EE;
+  --text:      #1A1A16;
+  --text2:     #5A5A50;
+  --text3:     #9A9A8A;
+  --radius:    12px;
+  --radius-lg: 20px;
+  --shadow:    0 2px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.13);
+  --font-disp: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --transition: 0.2s cubic-bezier(0.4,0,0.2,1);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   UTILIDADES
+   ============================================================ */
+.hidden { display: none !important; }
+.flex    { display: flex; }
+.flex-col{ display: flex; flex-direction: column; }
+.gap-4   { gap: 4px; }
+.gap-8   { gap: 8px; }
+.gap-12  { gap: 12px; }
+.gap-16  { gap: 16px; }
+.gap-24  { gap: 24px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.w-full  { width: 100%; }
+.mt-4    { margin-top: 4px; }
+.mt-8    { margin-top: 8px; }
+.mt-16   { margin-top: 16px; }
+.mt-24   { margin-top: 24px; }
+.text-sm { font-size: 13px; }
+.text-xs { font-size: 11px; }
+.text-muted { color: var(--text2); }
+.text-right { text-align: right; }
+.font-500 { font-weight: 500; }
+.font-600 { font-weight: 600; }
+
+/* ============================================================
+   BOTONES
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+  line-height: 1;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+.btn-outline {
+  background: transparent;
+  color: var(--accent);
+  border-color: var(--border);
+}
+.btn-outline:hover { background: var(--surface2); border-color: var(--accent2); }
+.btn-gold {
+  background: var(--gold);
+  color: #fff;
+  border-color: var(--gold);
+}
+.btn-gold:hover { background: #b07d2a; }
+.btn-danger {
+  background: var(--danger-lt);
+  color: var(--danger);
+  border-color: #f0c0c0;
+}
+.btn-danger:hover { background: #f5d0d0; }
+.btn-sm { padding: 6px 14px; font-size: 12px; border-radius: 8px; }
+.btn-lg { padding: 14px 32px; font-size: 16px; border-radius: var(--radius-lg); }
+.btn-icon { padding: 8px; border-radius: 8px; }
+
+/* ============================================================
+   INPUTS Y FORMULARIOS
+   ============================================================ */
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.form-input {
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color var(--transition), box-shadow var(--transition);
+  width: 100%;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--accent2);
+  box-shadow: 0 0 0 3px rgba(45,106,79,0.12);
+}
+.form-input::placeholder { color: var(--text3); }
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%235A5A50' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+.form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+/* ============================================================
+   CARDS
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+.card-sm { padding: 16px; border-radius: var(--radius); }
+
+/* ============================================================
+   BADGES / CHIPS
+   ============================================================ */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+}
+.badge-success { background: var(--success-lt); color: var(--success); }
+.badge-warning { background: var(--gold-lt); color: #8B6020; }
+.badge-danger  { background: var(--danger-lt); color: var(--danger); }
+.badge-neutral { background: var(--surface2); color: var(--text2); }
+
+/* ============================================================
+   PANTALLA DE LOGIN
+   ============================================================ */
+#login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+}
+#login-screen::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(45,106,79,0.07) 0%, transparent 70%);
+  top: -200px; right: -200px;
+  pointer-events: none;
+}
+#login-screen::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,151,58,0.06) 0%, transparent 70%);
+  bottom: -100px; left: -100px;
+  pointer-events: none;
+}
+.login-box {
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+  animation: fadeUp 0.5s ease both;
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.login-logo h1 {
+  font-family: var(--font-disp);
+  font-size: 36px;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.login-logo span { color: var(--gold); }
+.login-logo p {
+  font-size: 14px;
+  color: var(--text2);
+  margin-top: 4px;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-lg);
+}
+.login-card h2 {
+  font-family: var(--font-disp);
+  font-size: 22px;
+  color: var(--accent);
+  margin-bottom: 24px;
+}
+.login-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+}
+.login-remember input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent2); }
+.login-error {
+  background: var(--danger-lt);
+  color: var(--danger);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  border: 1px solid #f0c0c0;
+}
+
+/* ============================================================
+   LAYOUT PRINCIPAL (SIDEBAR + CONTENT)
+   ============================================================ */
+#app {
+  display: flex;
+  min-height: 100vh;
+}
+
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px;
+  min-height: 100vh;
+  background: linear-gradient(160deg, #1a1e24 0%, #22272f 60%, #1c2128 100%);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 100;
+  transition: transform var(--transition);
+  border-right: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+}
+.sidebar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    120deg,
+    rgba(255,255,255,0.013) 0px,
+    rgba(255,255,255,0.013) 1px,
+    transparent 1px,
+    transparent 60px
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.sidebar > * { position: relative; z-index: 1; }
+
+.sidebar-logo {
+  padding: 26px 22px 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(4px);
+}
+.sidebar-logo h1 {
+  font-family: var(--font-disp);
+  font-size: 26px;
+  color: #f0ece4;
+  letter-spacing: -0.01em;
+}
+.sidebar-logo span { color: var(--gold); }
+.sidebar-logo p {
+  font-size: 10px;
+  color: rgba(255,255,255,0.35);
+  margin-top: 3px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Etiqueta de sección */
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  padding: 12px 12px 6px;
+  display: block;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 13px;
+  border-radius: 10px;
+  color: rgba(200,200,210,0.65);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  letter-spacing: 0.01em;
+}
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.92);
+  border-color: rgba(255,255,255,0.08);
+}
+.nav-item.active {
+  background: rgba(255,255,255,0.1);
+  color: #ffffff;
+  border-color: rgba(255,255,255,0.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2);
+}
+.nav-item.active .nav-icon {
+  color: var(--gold);
+  filter: drop-shadow(0 0 4px rgba(200,151,58,0.35));
+}
+.nav-icon {
+  width: 17px; height: 17px;
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: all 0.18s ease;
+}
+.nav-item:hover .nav-icon { opacity: 1; }
+
+/* Separador */
+.nav-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 8px 4px;
+}
+
+.sidebar-footer {
+  padding: 14px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  background: rgba(0,0,0,0.15);
+  backdrop-filter: blur(4px);
+}
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 6px;
+}
+.user-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, #a87830 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(200,151,58,0.3);
+  letter-spacing: 0.04em;
+}
+.user-info p {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.88);
+  line-height: 1.3;
+}
+.user-info span {
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.35);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.user-info span::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  display: inline-block;
+  box-shadow: 0 0 6px rgba(74,222,128,0.5);
+}
+.btn-logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.4);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  width: 100%;
+  letter-spacing: 0.01em;
+}
+.btn-logout:hover {
+  background: rgba(255,80,80,0.1);
+  color: #ff8080;
+  border-color: rgba(255,80,80,0.15);
+}
+
+/* CONTENIDO PRINCIPAL */
+.main-content {
+  margin-left: 260px;
+  flex: 1;
+  padding: 32px;
+  min-height: 100vh;
+}
+.page-header {
+  margin-bottom: 28px;
+}
+.page-header h2 {
+  font-family: var(--font-disp);
+  font-size: 28px;
+  color: var(--accent);
+  letter-spacing: -0.01em;
+}
+.page-header p { font-size: 14px; color: var(--text2); margin-top: 4px; }
+.section-title {
+  font-family: var(--font-disp);
+  font-size: 20px;
+  color: var(--accent);
+  margin-bottom: 16px;
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 80px; height: 80px;
+  border-radius: 0 var(--radius-lg) 0 80px;
+  opacity: 0.06;
+}
+.stat-card.green::after  { background: var(--success); }
+.stat-card.gold::after   { background: var(--gold); }
+.stat-card.blue::after   { background: #3A6EA8; }
+.stat-card.purple::after { background: #7A3A9A; }
+.stat-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  margin-bottom: 8px;
+}
+.stat-value {
+  font-family: var(--font-disp);
+  font-size: 30px;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-sub { font-size: 12px; color: var(--text2); margin-top: 6px; }
+.stat-icon {
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.stat-icon.green  { background: var(--success-lt); }
+.stat-icon.gold   { background: var(--gold-lt); }
+.stat-icon.blue   { background: #EAF1FA; }
+.stat-icon.purple { background: #F3EAF7; }
+
+/* ============================================================
+   LISTA DE CLIENTES
+   ============================================================ */
+.clients-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 200px;
+}
+.search-input-wrap svg {
+  position: absolute;
+  left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text3);
+  pointer-events: none;
+}
+.search-input {
+  padding-left: 38px !important;
+}
+.clients-list { display: flex; flex-direction: column; gap: 10px; }
+.client-row {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.client-row:hover { border-color: var(--accent2); box-shadow: var(--shadow); transform: translateY(-1px); }
+.client-avatar {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-disp);
+  font-size: 18px;
+  color: var(--gold);
+  flex-shrink: 0;
+  border: 2px solid var(--gold);
+}
+.client-info { flex: 1; min-width: 0; }
+.client-name { font-weight: 500; font-size: 15px; color: var(--text); }
+.client-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.client-amount { text-align: right; flex-shrink: 0; }
+.client-amount-val { font-family: var(--font-disp); font-size: 17px; color: var(--accent); }
+.client-amount-lbl { font-size: 11px; color: var(--text3); }
+.client-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text2);
+}
+.empty-state .emoji { font-size: 48px; margin-bottom: 12px; }
+.empty-state h3 { font-family: var(--font-disp); font-size: 20px; color: var(--accent); margin-bottom: 6px; }
+.empty-state p { font-size: 14px; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 20px;
+  animation: fadeIn 0.2s ease;
+}
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.25s ease;
+}
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.modal-title { font-family: var(--font-disp); font-size: 22px; color: var(--accent); }
+.modal-close {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text2);
+  transition: all var(--transition);
+  flex-shrink: 0;
+}
+.modal-close:hover { background: var(--surface2); color: var(--danger); }
+.modal-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+/* ============================================================
+   DETALLE DE CLIENTE
+   ============================================================ */
+#detail-page .client-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+.detail-avatar {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: var(--gold-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-disp);
+  font-size: 28px;
+  color: var(--gold);
+  border: 3px solid var(--gold);
+  flex-shrink: 0;
+}
+.detail-info h3 { font-family: var(--font-disp); font-size: 24px; color: var(--accent); }
+.detail-info p  { font-size: 14px; color: var(--text2); }
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+.info-cell {
+  background: var(--surface2);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.info-cell-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text3); font-weight: 500; }
+.info-cell-val { font-size: 16px; font-weight: 500; color: var(--text); margin-top: 4px; }
+
+/* ============================================================
+   TABLA DE CUOTAS
+   ============================================================ */
+.cuotas-wrap { overflow-x: auto; border-radius: var(--radius-lg); border: 1px solid var(--border); }
+.cuotas-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.cuotas-table th {
+  background: var(--surface2);
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.cuotas-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.cuotas-table tr:last-child td { border-bottom: none; }
+.cuotas-table tr:hover td { background: rgba(0,0,0,0.015); }
+.cuota-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+}
+.cuota-num.pagada { background: var(--success-lt); color: var(--success); }
+.cuota-num.vencida { background: var(--danger-lt); color: var(--danger); }
+.check-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  border: 1px solid transparent;
+}
+.check-btn.pagar {
+  background: var(--success-lt);
+  color: var(--success);
+  border-color: #b0ddc0;
+}
+.check-btn.pagar:hover { background: #d0eedd; }
+.check-btn.desmarcar {
+  background: var(--surface2);
+  color: var(--text2);
+  border-color: var(--border);
+}
+.check-btn.desmarcar:hover { background: var(--danger-lt); color: var(--danger); border-color: #f0c0c0; }
+
+/* ============================================================
+   ANIMACIONES
+   ============================================================ */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   RESPONSIVE COMPLETO — MOBILE FIRST
+   ============================================================ */
+
+/* ---- BARRA DE NAVEGACIÓN INFERIOR (solo móvil) ---- */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: linear-gradient(160deg, #1a1e24 0%, #22272f 100%);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  z-index: 150;
+  padding: 0 8px;
+  align-items: center;
+  justify-content: space-around;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
+}
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 12px;
+  transition: all 0.18s ease;
+  min-width: 60px;
+  letter-spacing: 0.02em;
+  font-family: var(--font-body);
+}
+.bottom-nav-item svg { width: 22px; height: 22px; }
+.bottom-nav-item.active {
+  color: var(--gold);
+}
+.bottom-nav-item.active svg {
+  filter: drop-shadow(0 0 4px rgba(200,151,58,0.4));
+}
+
+/* ---- HEADER MÓVIL ---- */
+.mobile-header {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: linear-gradient(160deg, #1a1e24 0%, #22272f 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  z-index: 140;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+}
+.mobile-header-logo {
+  font-family: var(--font-disp);
+  font-size: 20px;
+  color: #f0ece4;
+}
+.mobile-header-logo span { color: var(--gold); }
+.mobile-header-user {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold) 0%, #a87830 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(200,151,58,0.3);
+  font-family: var(--font-body);
+}
+
+/* ---- MENÚ USUARIO MÓVIL ---- */
+.mobile-user-menu {
+  display: none;
+  position: fixed;
+  top: 56px; right: 12px;
+  background: #22272f;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 8px;
+  z-index: 200;
+  min-width: 180px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  animation: slideUp 0.2s ease;
+}
+.mobile-user-menu.show { display: block; }
+.mobile-user-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  color: rgba(255,255,255,0.7);
+  font-size: 13px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  font-family: var(--font-body);
+  transition: all 0.15s;
+}
+.mobile-user-menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.mobile-user-menu-item.danger { color: #ff8080; }
+.mobile-user-menu-item.danger:hover { background: rgba(255,80,80,0.1); }
+
+@media (max-width: 768px) {
+  /* Ocultar sidebar lateral */
+  .sidebar { display: none; }
+
+  /* Mostrar header y nav inferior */
+  .mobile-header { display: flex; }
+  .bottom-nav { display: flex; }
+
+  /* Contenido desplazado para header y nav inferior */
+  .main-content {
+    margin-left: 0;
+    padding: 72px 14px 80px;
+    min-height: 100vh;
+  }
+
+  /* Ocultar botón hamburguesa legacy */
+  .mobile-menu-btn { display: none !important; }
+
+  /* Grids a 1 columna */
+  .form-grid-2, .form-grid-3 { grid-template-columns: 1fr; }
+
+  /* Stats en 2 columnas compactas */
+  .stats-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .stat-card { padding: 14px 14px; }
+  .stat-value { font-size: 20px; }
+  .stat-icon { width: 28px; height: 28px; font-size: 14px; top: 12px; right: 12px; }
+
+  /* Header de página */
+  .page-header { margin-bottom: 16px; }
+  .page-header h2 { font-size: 22px; }
+  .page-header.flex { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .page-header.flex .btn { width: 100%; justify-content: center; }
+
+  /* Botón nuevo cliente full width */
+  .clients-toolbar { flex-direction: column; }
+  .search-input-wrap { min-width: unset; }
+  #filter-status { width: 100% !important; }
+
+  /* Filas de cliente más compactas */
+  .client-row { padding: 12px 14px; gap: 10px; }
+  .client-avatar { width: 38px; height: 38px; font-size: 14px; }
+  .client-name { font-size: 14px; }
+  .client-meta { font-size: 11px; }
+  .client-actions { display: none; }
+  .client-amount-val { font-size: 15px; }
+
+  /* Modal a pantalla completa */
+  .modal-overlay { padding: 0; align-items: flex-end; }
+  .modal {
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 32px;
+    max-height: 92vh;
+    width: 100%;
+  }
+  .modal-title { font-size: 18px; }
+
+  /* Tabla de cuotas: scroll horizontal */
+  .cuotas-wrap { border-radius: 12px; }
+  .cuotas-table { font-size: 12px; }
+  .cuotas-table th, .cuotas-table td { padding: 10px 10px; }
+  .check-btn { padding: 5px 8px; font-size: 11px; }
+
+  /* Info grid en detalle */
+  .info-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .info-cell { padding: 10px 12px; }
+  .info-cell-val { font-size: 14px; }
+
+  /* Detail header */
+  .client-detail-header { gap: 12px; flex-wrap: wrap; }
+  .detail-avatar { width: 50px; height: 50px; font-size: 20px; }
+  .detail-info h3 { font-size: 19px; }
+
+  /* Sección de títulos */
+  .section-title { font-size: 17px; margin-bottom: 12px; }
+
+  /* Botones de acción en detalle */
+  #detail-page .page-header { flex-direction: row !important; flex-wrap: wrap; gap: 8px; }
+
+  /* Cards genéricas */
+  .card { padding: 16px; }
+}
+
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stat-value { font-size: 17px; }
+  .main-content { padding: 66px 10px 76px; }
+  .info-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+/* Progreso de préstamo */
+.progress-bar {
+  height: 6px;
+  background: var(--surface2);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent2);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Tab pills */
+.tab-pills { display: flex; gap: 6px; margin-bottom: 20px; }
+.tab-pill {
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text2);
+  transition: all var(--transition);
+}
+.tab-pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Confirm dialog */
+.confirm-box {
+  text-align: center;
+  padding: 8px 0;
+}
+.confirm-box .confirm-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+.confirm-box h3 {
+  font-family: var(--font-disp);
+  font-size: 20px;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.confirm-box p { font-size: 14px; color: var(--text2); margin-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     PANTALLA DE LOGIN
+     ============================================================ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <h1>Présta<span>Mo</span></h1>
+      <p>Sistema de Gestión de Préstamos</p>
+    </div>
+    <div class="login-card">
+      <h2>Iniciar Sesión</h2>
+      <div id="login-error" class="login-error hidden mt-8" style="margin-bottom:16px"></div>
+      <div class="flex-col gap-16">
+        <div class="form-group">
+          <label class="form-label">Usuario</label>
+          <input id="inp-user" type="text" class="form-input" placeholder="Ingresa tu usuario" autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input id="inp-pass" type="password" class="form-input" placeholder="Ingresa tu contraseña" autocomplete="current-password">
+        </div>
+        <label class="login-remember">
+          <input type="checkbox" id="remember-me"> Recordarme en este dispositivo
+        </label>
+        <button class="btn btn-primary btn-lg w-full" onclick="doLogin()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10,17 15,12 10,7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          Ingresar
+        </button>
+      </div>
+      <p class="text-sm text-muted mt-16" style="text-align:center">
+        Usuario: <strong>admin</strong> | Contraseña: <strong>1234</strong>
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     HEADER MÓVIL
+     ============================================================ -->
+<header class="mobile-header" id="mobile-header">
+  <div class="mobile-header-logo">Présta<span>Mo</span></div>
+  <button class="mobile-header-user" id="mobile-user-btn" onclick="toggleUserMenu()">AD</button>
+</header>
+
+<!-- Menú de usuario móvil -->
+<div class="mobile-user-menu" id="mobile-user-menu">
+  <div style="padding:8px 14px 10px;border-bottom:1px solid rgba(255,255,255,0.07);margin-bottom:4px">
+    <div style="font-size:13px;font-weight:600;color:rgba(255,255,255,0.85)" id="menu-username-mob">admin</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:4px">
+      <span style="width:6px;height:6px;border-radius:50%;background:#4ade80;display:inline-block"></span>Sesión activa
+    </div>
+  </div>
+  <button class="mobile-user-menu-item danger" onclick="doLogout();toggleUserMenu()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Cerrar sesión
+  </button>
+</div>
+
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<!-- ============================================================
+     BARRA NAVEGACIÓN INFERIOR MÓVIL
+     ============================================================ -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bottom-nav-item active" id="bnav-dashboard" onclick="showPage('dashboard')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </button>
+  <button class="bottom-nav-item" id="bnav-clients" onclick="showPage('clients')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+    Clientes
+  </button>
+  <button class="bottom-nav-item" id="bnav-intereses" onclick="showPage('intereses')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+    Pagados
+  </button>
+</nav>
+
+<!-- ============================================================
+     APP PRINCIPAL
+     ============================================================ -->
+<div id="app" class="hidden">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <h1>Présta<span>Mo</span></h1>
+      <p>Gestión de Préstamos</p>
+    </div>
+    <nav class="sidebar-nav">
+      <span class="nav-section-label">Menú principal</span>
+      <button class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="nav-item" onclick="showPage('clients')" id="nav-clients">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clientes
+      </button>
+      <div class="nav-divider"></div>
+      <span class="nav-section-label">Historial</span>
+      <button class="nav-item" onclick="showPage('intereses')" id="nav-intereses">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+        Pagados
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-avatar" id="user-avatar-abbr">AD</div>
+        <div class="user-info">
+          <p id="sidebar-username">Administrador</p>
+          <span>Sesión activa</span>        </div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Cerrar sesión
+      </button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="main-content">
+
+    <!-- ======================== DASHBOARD ======================== -->
+    <div id="dashboard-page">
+      <div class="page-header">
+        <h2>Dashboard</h2>
+        <p>Resumen general de tu cartera de préstamos</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card green">
+          <div class="stat-icon green">💰</div>
+          <div class="stat-label">Total Prestado</div>
+          <div class="stat-value" id="stat-total-prestado">$0</div>
+          <div class="stat-sub" id="stat-total-sub">Capital desembolsado</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-icon gold">📈</div>
+          <div class="stat-label">Total por Cobrar</div>
+          <div class="stat-value" id="stat-total-cobrar">$0</div>
+          <div class="stat-sub" id="stat-cobrar-sub">Cuotas pendientes</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon blue">👥</div>
+          <div class="stat-label">Clientes Activos</div>
+          <div class="stat-value" id="stat-clientes">0</div>
+          <div class="stat-sub">Préstamos vigentes</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon purple">✅</div>
+          <div class="stat-label">Cuotas Cobradas</div>
+          <div class="stat-value" id="stat-cuotas-cobradas">$0</div>
+          <div class="stat-sub" id="stat-cuotas-sub">Pagos recibidos</div>
+        </div>
+      </div>
+
+      <!-- ====== SECCIÓN DE INTERESES ====== -->
+      <div class="section-title" style="margin-top:8px">Intereses generados</div>
+      <div class="stats-grid" style="margin-bottom:28px">
+        <div class="stat-card gold">
+          <div class="stat-icon gold">📊</div>
+          <div class="stat-label">Total intereses pactados</div>
+          <div class="stat-value" id="int-total-pactado">$0</div>
+          <div class="stat-sub">Suma de todos los préstamos</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon green">✅</div>
+          <div class="stat-label">Intereses cobrados</div>
+          <div class="stat-value" id="int-cobrados">$0</div>
+          <div class="stat-sub">De cuotas ya pagadas</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon blue">⏳</div>
+          <div class="stat-label">Intereses pendientes</div>
+          <div class="stat-value" id="int-pendientes">$0</div>
+          <div class="stat-sub">De cuotas aún no pagadas</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon purple">📅</div>
+          <div class="stat-label">Interés promedio / cliente</div>
+          <div class="stat-value" id="int-promedio">$0</div>
+          <div class="stat-sub">Promedio por préstamo</div>
+        </div>
+      </div>
+
+      <!-- Tabla de intereses por cliente -->
+      <div class="section-title">Detalle de intereses por cliente</div>
+      <div class="cuotas-wrap" style="margin-bottom:32px">
+        <table class="cuotas-table">
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Capital</th>
+              <th>Interés / cuota</th>
+              <th>Total intereses</th>
+              <th>Cobrado</th>
+              <th>Pendiente</th>
+              <th>Avance</th>
+            </tr>
+          </thead>
+          <tbody id="int-tbody-dash"></tbody>
+          <tfoot id="int-tfoot-dash"></tfoot>
+        </table>
+      </div>
+
+      <!-- Resumen por cliente en dashboard -->
+      <div class="section-title">Préstamos recientes</div>
+      <div id="dashboard-list" class="clients-list"></div>
+    </div>
+
+    <!-- ======================== CLIENTES ======================== -->
+    <div id="clients-page" class="hidden">
+      <div class="page-header flex justify-between items-center" style="flex-wrap:wrap;gap:12px">
+        <div>
+          <h2>Clientes</h2>
+          <p>Administra todos tus préstamos personales</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nuevo cliente
+        </button>
+      </div>
+      <div class="clients-toolbar">
+        <div class="search-input-wrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" class="form-input search-input" id="search-input" placeholder="Buscar por nombre o teléfono..." oninput="renderClients()">
+        </div>
+        <select class="form-input form-select" id="filter-status" style="width:180px" onchange="renderClients()">
+          <option value="">Todos los estados</option>
+          <option value="activo">Activos</option>
+          <option value="completo">Completados</option>
+        </select>
+      </div>
+      <div id="clients-list" class="clients-list"></div>
+    </div>
+
+    <!-- ======================== DETALLE CLIENTE ======================== -->
+    <div id="detail-page" class="hidden">
+      <div class="page-header flex justify-between items-center" style="flex-wrap:wrap;gap:12px">
+        <button class="btn btn-outline btn-sm" onclick="showPage('clients')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15,18 9,12 15,6"/></svg>
+          Volver a clientes
+        </button>
+        <div class="flex gap-8">
+          <button class="btn btn-outline btn-sm" id="btn-edit-detail" onclick="editCurrentClient()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Editar
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteCurrentClient()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6"/><path d="M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+            Eliminar
+          </button>
+        </div>
+      </div>
+      <div id="detail-content"></div>
+    </div>
+
+    <!-- ======================== PAGADOS ======================== -->
+    <div id="intereses-page" class="hidden">
+      <div class="page-header">
+        <h2>Clientes Pagados</h2>
+        <p>Préstamos completamente saldados — pasan aquí automáticamente al marcar la última cuota</p>
+      </div>
+
+      <!-- Tarjetas resumen -->
+      <div class="stats-grid" style="margin-bottom:28px">
+        <div class="stat-card green">
+          <div class="stat-icon green">🏆</div>
+          <div class="stat-label">Clientes saldados</div>
+          <div class="stat-value" id="pag-total-clientes">0</div>
+          <div class="stat-sub">Préstamos completados</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-icon gold">💰</div>
+          <div class="stat-label">Capital recuperado</div>
+          <div class="stat-value" id="pag-capital">$0</div>
+          <div class="stat-sub">Total prestado cobrado</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon blue">📈</div>
+          <div class="stat-label">Intereses cobrados</div>
+          <div class="stat-value" id="pag-intereses">$0</div>
+          <div class="stat-sub">Ganancia total generada</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="stat-icon purple">🧾</div>
+          <div class="stat-label">Total recaudado</div>
+          <div class="stat-value" id="pag-total">$0</div>
+          <div class="stat-sub">Capital + intereses</div>
+        </div>
+      </div>
+
+      <!-- Lista de clientes pagados -->
+      <div class="section-title">Historial de clientes pagados</div>
+      <div id="pagados-list" class="clients-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ============================================================
+     MODAL: AGREGAR / EDITAR CLIENTE
+     ============================================================ -->
+<div class="modal-overlay hidden" id="modal-client">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-client-title">Nuevo cliente</h3>
+      <button class="modal-close" onclick="closeModal('modal-client')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="flex-col gap-16">
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Nombre completo *</label>
+          <input type="text" id="f-nombre" class="form-input" placeholder="Ej: María García">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Teléfono</label>
+          <input type="tel" id="f-tel" class="form-input" placeholder="Ej: 300 123 4567">
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Monto prestado *</label>
+          <input type="text" id="f-monto" class="form-input" placeholder="0" oninput="formatMontoInput(this);recalcPreview()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Número de cuotas *</label>
+          <input type="number" id="f-cuotas" class="form-input" placeholder="Ej: 6" min="1" max="60" oninput="recalcPreview()">
+        </div>
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Fecha del préstamo *</label>
+          <input type="date" id="f-fecha" class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Frecuencia de pago</label>
+          <select id="f-frecuencia" class="form-input form-select" onchange="recalcPreview()">
+            <option value="30">Mensual (30 días)</option>
+            <option value="15">Quincenal (15 días)</option>
+            <option value="7">Semanal (7 días)</option>
+          </select>
+        </div>
+      </div>
+      <!-- Preview de cálculo -->
+      <div id="calc-preview" class="hidden" style="background:var(--success-lt);border:1px solid #b0ddc0;border-radius:var(--radius);padding:16px">
+        <div style="font-size:12px;font-weight:600;color:var(--success);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Vista previa del préstamo</div>
+        <div class="form-grid-3" style="gap:8px">
+          <div>
+            <div style="font-size:11px;color:#5A8A70">Interés mensual</div>
+            <div style="font-size:16px;font-weight:600;color:var(--accent)">20%</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#5A8A70">Total a pagar</div>
+            <div style="font-size:16px;font-weight:600;color:var(--accent)" id="prev-total">—</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:#5A8A70">Valor cuota</div>
+            <div style="font-size:16px;font-weight:600;color:var(--accent)" id="prev-cuota">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeModal('modal-client')">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveClient()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13"/><polyline points="7,3 7,8 15,8"/></svg>
+        Guardar cliente
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MODAL: CONFIRMACIÓN
+     ============================================================ -->
+<div class="modal-overlay hidden" id="modal-confirm">
+  <div class="modal" style="max-width:400px">
+    <div class="confirm-box">
+      <div class="confirm-icon">🗑️</div>
+      <h3>¿Eliminar cliente?</h3>
+      <p id="confirm-msg">Esta acción no se puede deshacer. Se eliminarán todos los datos del préstamo.</p>
+      <div style="display:flex;gap:10px;justify-content:center">
+        <button class="btn btn-outline" onclick="closeModal('modal-confirm')">Cancelar</button>
+        <button class="btn btn-danger" id="confirm-ok-btn">Sí, eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     TOAST DE NOTIFICACIONES
+     ============================================================ -->
+<div id="toast" style="
+  position:fixed;bottom:24px;right:24px;z-index:999;
+  background:var(--accent);color:#fff;
+  padding:12px 20px;border-radius:var(--radius);
+  font-size:14px;font-weight:500;
+  box-shadow:var(--shadow-lg);
+  transform:translateY(80px);opacity:0;
+  transition:all 0.3s ease;
+  display:flex;align-items:center;gap:10px;
+  max-width:320px;
+"></div>
+
+<script>
+/* ============================================================
+   CONFIGURACIÓN Y CONSTANTES
+   ============================================================ */
+const CONFIG = {
+  USUARIO: 'admin',
+  PASSWORD: '1234',
+  INTERES_MENSUAL: 0.20,  // 20% mensual fijo
+  STORAGE_KEY: 'prestamo_app_data',
+  SESSION_KEY: 'prestamo_session'
+};
+
+/* ============================================================
+   ESTADO DE LA APP
+   ============================================================ */
+let state = {
+  clients: [],
+  currentClientId: null,
+  editMode: false,
+  editId: null
+};
+
+/* ============================================================
+   ALMACENAMIENTO LOCAL (localStorage)
+   ============================================================ */
+function saveData() {
+  localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state.clients));
+}
+
+function loadData() {
+  const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
+  if (raw) state.clients = JSON.parse(raw);
+}
+
+/* ============================================================
+   AUTENTICACIÓN
+   ============================================================ */
+function checkSession() {
+  // Verificar si hay sesión guardada
+  const session = localStorage.getItem(CONFIG.SESSION_KEY);
+  if (session) {
+    const s = JSON.parse(session);
+    if (s.remember || s.temp) {
+      showApp(s.username);
+      return true;
+    }
+  }
+  return false;
+}
+
+function doLogin() {
+  const user = document.getElementById('inp-user').value.trim();
+  const pass = document.getElementById('inp-pass').value;
+  const remember = document.getElementById('remember-me').checked;
+  const errEl = document.getElementById('login-error');
+
+  if (user !== CONFIG.USUARIO || pass !== CONFIG.PASSWORD) {
+    errEl.textContent = 'Usuario o contraseña incorrectos. Intenta de nuevo.';
+    errEl.classList.remove('hidden');
+    setTimeout(() => errEl.classList.add('hidden'), 4000);
+    return;
+  }
+
+  // Guardar sesión
+  localStorage.setItem(CONFIG.SESSION_KEY, JSON.stringify({
+    username: user,
+    remember: remember,
+    temp: !remember  // sesión temporal si no es "recordarme"
+  }));
+
+  showApp(user);
+}
+
+function doLogout() {
+  localStorage.removeItem(CONFIG.SESSION_KEY);
+  document.getElementById('app').classList.add('hidden');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('inp-user').value = '';
+  document.getElementById('inp-pass').value = '';
+}
+
+function showApp(username) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('sidebar-username').textContent = username;
+  const abbr = username.substring(0, 2).toUpperCase();
+  document.getElementById('user-avatar-abbr').textContent = abbr;
+  // Sincronizar header y menú móvil
+  document.getElementById('mobile-user-btn').textContent = abbr;
+  document.getElementById('menu-username-mob').textContent = username;
+  loadData();
+  showPage('dashboard');
+}
+
+// Soporte Enter en login
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('inp-pass').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('inp-user').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('inp-pass').focus();
+  });
+  // Fecha de hoy como default en el formulario
+  document.getElementById('f-fecha').valueAsDate = new Date();
+  // Revisar sesión al cargar
+  if (!checkSession()) {
+    document.getElementById('login-screen').style.display = 'flex';
+  }
+});
+
+/* ============================================================
+   NAVEGACIÓN DE PÁGINAS
+   ============================================================ */
+function showPage(page) {
+  ['dashboard-page','clients-page','detail-page','intereses-page'].forEach(p => {
+    document.getElementById(p).classList.add('hidden');
+  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
+
+  if (page === 'dashboard') {
+    document.getElementById('dashboard-page').classList.remove('hidden');
+    document.getElementById('nav-dashboard').classList.add('active');
+    document.getElementById('bnav-dashboard').classList.add('active');
+    renderDashboard();
+  } else if (page === 'clients') {
+    document.getElementById('clients-page').classList.remove('hidden');
+    document.getElementById('nav-clients').classList.add('active');
+    document.getElementById('bnav-clients').classList.add('active');
+    renderClients();
+  } else if (page === 'detail') {
+    document.getElementById('detail-page').classList.remove('hidden');
+    document.getElementById('nav-clients').classList.add('active');
+    document.getElementById('bnav-clients').classList.add('active');
+    renderDetail();
+  } else if (page === 'intereses') {
+    document.getElementById('intereses-page').classList.remove('hidden');
+    document.getElementById('nav-intereses').classList.add('active');
+    document.getElementById('bnav-intereses').classList.add('active');
+    renderIntereses();
+  }
+  closeSidebar();
+  // Cerrar menú usuario móvil si está abierto
+  document.getElementById('mobile-user-menu').classList.remove('show');
+}
+
+function toggleSidebar() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sidebar-overlay');
+  sb.classList.toggle('open');
+  ov.classList.toggle('show');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebar-overlay').classList.remove('show');
+}
+function toggleUserMenu() {
+  document.getElementById('mobile-user-menu').classList.toggle('show');
+}
+// Cerrar menú usuario al tocar fuera
+document.addEventListener('click', e => {
+  const menu = document.getElementById('mobile-user-menu');
+  const btn  = document.getElementById('mobile-user-btn');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.classList.remove('show');
+  }
+});
+
+/* ============================================================
+   CÁLCULO DE INTERESES Y CUOTAS
+   ============================================================ */
+function calcularPrestamo(monto, numCuotas, fechaInicio, diasFrecuencia) {
+  // INTERÉS SIMPLE FIJO: 20% mensual sobre el monto original
+  // Ejemplo: $1.000.000 × 20% = $200.000 de interés por cuota (mensual)
+  const interesMensual = CONFIG.INTERES_MENSUAL;
+  const periodosDias = parseInt(diasFrecuencia) || 30;
+
+  // Ajustar tasa según frecuencia
+  const tasaPeriodo = interesMensual * (periodosDias / 30);
+
+  // Interés fijo por cuota = monto × tasa (siempre sobre capital original)
+  const interesPorCuota = monto * tasaPeriodo;
+
+  // Capital por cuota = monto dividido en partes iguales
+  const capitalPorCuota = monto / numCuotas;
+
+  // Cuota fija = capital + interés fijo
+  const cuotaFija = capitalPorCuota + interesPorCuota;
+
+  const totalIntereses = interesPorCuota * numCuotas;
+  const totalPagar = monto + totalIntereses;
+
+  // Generar tabla de cuotas
+  const cuotas = [];
+  let fechaBase = new Date(fechaInicio + 'T00:00:00');
+  let saldoRestante = monto;
+
+  for (let i = 1; i <= numCuotas; i++) {
+    saldoRestante -= capitalPorCuota;
+
+    // Fecha de pago: sumar períodos desde la fecha base
+    const fechaPago = new Date(fechaBase);
+    fechaPago.setDate(fechaPago.getDate() + periodosDias * i);
+
+    cuotas.push({
+      numero: i,
+      fechaPago: fechaPago.toISOString().split('T')[0],
+      capital: capitalPorCuota,
+      interes: interesPorCuota,
+      cuota: cuotaFija,
+      saldo: Math.max(0, saldoRestante),
+      pagada: false,
+      fechaPagada: null
+    });
+  }
+
+  return { cuotaFija, totalPagar, totalIntereses, cuotas, tasaPeriodo };
+}
+
+/* ============================================================
+   FORMATEO
+   ============================================================ */
+function fmt(num) {
+  return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(num);
+}
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  const [y, m, d] = dateStr.split('-');
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
+}
+function initials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+function isVencida(dateStr) {
+  if (!dateStr) return false;
+  return new Date(dateStr + 'T00:00:00') < new Date();
+}
+
+/* ============================================================
+   FORMATO DE MONTO CON COMAS
+   ============================================================ */
+function numberWithCommas(n) {
+  // Convierte número a string con comas: 1500000 → "1,500,000"
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function formatMontoInput(input) {
+  // Mientras el usuario escribe, mantiene solo dígitos y agrega comas
+  const digits = input.value.replace(/[^0-9]/g, '');
+  if (digits === '') { input.value = ''; return; }
+  input.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+/* ============================================================
+   CÁLCULO PREVIEW EN EL MODAL
+   ============================================================ */
+function recalcPreview() {
+  const montoRaw = document.getElementById('f-monto').value.replace(/[^0-9]/g, '');
+  const monto = parseFloat(montoRaw) || 0;
+  const cuotas = parseInt(document.getElementById('f-cuotas').value) || 0;
+  const frecuencia = document.getElementById('f-frecuencia').value;
+  const preview = document.getElementById('calc-preview');
+
+  if (monto > 0 && cuotas > 0) {
+    const result = calcularPrestamo(monto, cuotas, new Date().toISOString().split('T')[0], frecuencia);
+    document.getElementById('prev-total').textContent = fmt(result.totalPagar);
+    document.getElementById('prev-cuota').textContent = fmt(result.cuotaFija);
+    preview.classList.remove('hidden');
+  } else {
+    preview.classList.add('hidden');
+  }
+}
+
+/* ============================================================
+   MODAL AGREGAR / EDITAR CLIENTE
+   ============================================================ */
+function openAddModal() {
+  state.editMode = false;
+  state.editId = null;
+  document.getElementById('modal-client-title').textContent = 'Nuevo cliente';
+  // Limpiar campos
+  ['f-nombre','f-tel','f-monto','f-cuotas'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('f-fecha').valueAsDate = new Date();
+  document.getElementById('f-frecuencia').value = '30';
+  document.getElementById('calc-preview').classList.add('hidden');
+  openModal('modal-client');
+}
+
+function editCurrentClient() {
+  const client = state.clients.find(c => c.id === state.currentClientId);
+  if (!client) return;
+  state.editMode = true;
+  state.editId = client.id;
+
+  document.getElementById('modal-client-title').textContent = 'Editar cliente';
+  document.getElementById('f-nombre').value = client.nombre;
+  document.getElementById('f-tel').value = client.telefono;
+  document.getElementById('f-monto').value = numberWithCommas(client.monto);
+  document.getElementById('f-cuotas').value = client.numCuotas;
+  document.getElementById('f-fecha').value = client.fechaPrestamo;
+  document.getElementById('f-frecuencia').value = client.frecuencia || '30';
+  recalcPreview();
+  openModal('modal-client');
+}
+
+function saveClient() {
+  // Validación
+  const nombre = document.getElementById('f-nombre').value.trim();
+  const telefono = document.getElementById('f-tel').value.trim();
+  const montoRaw = document.getElementById('f-monto').value.replace(/[^0-9]/g, '');
+  const monto = parseFloat(montoRaw);
+  const numCuotas = parseInt(document.getElementById('f-cuotas').value);
+  const fechaPrestamo = document.getElementById('f-fecha').value;
+  const frecuencia = document.getElementById('f-frecuencia').value;
+
+  if (!nombre || !monto || !numCuotas || !fechaPrestamo) {
+    showToast('Por favor completa todos los campos obligatorios.', 'error');
+    return;
+  }
+  if (monto <= 0 || numCuotas <= 0) {
+    showToast('El monto y las cuotas deben ser mayores a cero.', 'error');
+    return;
+  }
+
+  // Calcular préstamo
+  const calc = calcularPrestamo(monto, numCuotas, fechaPrestamo, frecuencia);
+
+  if (state.editMode && state.editId) {
+    // Editar cliente existente
+    const idx = state.clients.findIndex(c => c.id === state.editId);
+    if (idx !== -1) {
+      const oldCuotas = state.clients[idx].cuotas;
+      state.clients[idx] = {
+        ...state.clients[idx],
+        nombre, telefono, monto, numCuotas, fechaPrestamo, frecuencia,
+        cuotaFija: calc.cuotaFija,
+        totalPagar: calc.totalPagar,
+        totalIntereses: calc.totalIntereses,
+        // Preservar estado de pagos de cuotas existentes
+        cuotas: calc.cuotas.map((c, i) => ({
+          ...c,
+          pagada: (oldCuotas[i] && oldCuotas[i].pagada) || false,
+          fechaPagada: (oldCuotas[i] && oldCuotas[i].fechaPagada) || null
+        }))
+      };
+      showToast('Cliente actualizado correctamente.');
+    }
+  } else {
+    // Crear nuevo cliente
+    const newClient = {
+      id: Date.now().toString(),
+      nombre, telefono, monto, numCuotas, fechaPrestamo, frecuencia,
+      cuotaFija: calc.cuotaFija,
+      totalPagar: calc.totalPagar,
+      totalIntereses: calc.totalIntereses,
+      cuotas: calc.cuotas,
+      creadoEn: new Date().toISOString()
+    };
+    state.clients.unshift(newClient);
+    showToast('Cliente agregado correctamente.');
+  }
+
+  saveData();
+  closeModal('modal-client');
+  // Si estamos en detalle, re-renderizar
+  if (state.currentClientId) renderDetail();
+  if (document.getElementById('clients-page').classList.contains('hidden') === false) renderClients();
+  renderDashboard();
+}
+
+/* ============================================================
+   ELIMINAR CLIENTE
+   ============================================================ */
+function deleteCurrentClient() {
+  const client = state.clients.find(c => c.id === state.currentClientId);
+  if (!client) return;
+
+  document.getElementById('confirm-msg').textContent =
+    `Se eliminará el préstamo de ${client.nombre} y todos sus registros. Esta acción no se puede deshacer.`;
+  document.getElementById('confirm-ok-btn').onclick = () => {
+    state.clients = state.clients.filter(c => c.id !== state.currentClientId);
+    saveData();
+    closeModal('modal-confirm');
+    showPage('clients');
+    showToast('Cliente eliminado.');
+  };
+  openModal('modal-confirm');
+}
+
+/* ============================================================
+   MARCAR / DESMARCAR CUOTA COMO PAGADA
+   ============================================================ */
+function toggleCuota(clientId, cuotaIndex) {
+  const client = state.clients.find(c => c.id === clientId);
+  if (!client) return;
+  const cuota = client.cuotas[cuotaIndex];
+  cuota.pagada = !cuota.pagada;
+  cuota.fechaPagada = cuota.pagada ? new Date().toISOString().split('T')[0] : null;
+  saveData();
+  renderDetail();
+  renderDashboard();
+
+  // Si todas las cuotas están pagadas → notificar y refrescar pestaña Pagados
+  const todasPagadas = client.cuotas.every(q => q.pagada);
+  if (todasPagadas) {
+    showToast(`🏆 ${client.nombre} completó su préstamo. Aparece en "Pagados".`);
+  }
+  // Si la pestaña pagados está visible, refrescarla
+  if (!document.getElementById('intereses-page').classList.contains('hidden')) {
+    renderIntereses();
+  }
+}
+
+/* ============================================================
+   RENDERIZADO: DASHBOARD
+   ============================================================ */
+function renderDashboard() {
+  const clients = state.clients;
+  let totalPrestado   = 0;
+  let totalCobrar     = 0;
+  let totalCobrado    = 0;
+  let clientesActivos = 0;
+  let intPactado      = 0;
+  let intCobrados     = 0;
+  let intPendientes   = 0;
+
+  clients.forEach(c => {
+    totalPrestado += c.monto;
+    const cuotasPendientes = c.cuotas.filter(q => !q.pagada);
+    const cuotasPagadas    = c.cuotas.filter(q => q.pagada);
+    totalCobrar  += cuotasPendientes.reduce((s, q) => s + q.cuota, 0);
+    totalCobrado += cuotasPagadas.reduce((s, q) => s + q.cuota, 0);
+    if (cuotasPendientes.length > 0) clientesActivos++;
+
+    // Intereses
+    const intPorCuota = c.totalIntereses / c.numCuotas;
+    intPactado    += c.totalIntereses;
+    intCobrados   += cuotasPagadas.length * intPorCuota;
+    intPendientes += cuotasPendientes.length * intPorCuota;
+  });
+
+  const intPromedio = clients.length > 0 ? intPactado / clients.length : 0;
+
+  // Tarjetas superiores
+  document.getElementById('stat-total-prestado').textContent  = fmt(totalPrestado);
+  document.getElementById('stat-total-cobrar').textContent    = fmt(totalCobrar);
+  document.getElementById('stat-clientes').textContent        = clientesActivos;
+  document.getElementById('stat-cuotas-cobradas').textContent = fmt(totalCobrado);
+
+  // Tarjetas de intereses
+  document.getElementById('int-total-pactado').textContent = fmt(intPactado);
+  document.getElementById('int-cobrados').textContent      = fmt(intCobrados);
+  document.getElementById('int-pendientes').textContent    = fmt(intPendientes);
+  document.getElementById('int-promedio').textContent      = fmt(intPromedio);
+
+  // Tabla de intereses por cliente
+  const tbody = document.getElementById('int-tbody-dash');
+  const tfoot = document.getElementById('int-tfoot-dash');
+
+  if (clients.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text3)">Sin préstamos registrados</td></tr>`;
+    tfoot.innerHTML = '';
+  } else {
+    tbody.innerHTML = clients.map(c => {
+      const intPorCuota  = c.totalIntereses / c.numCuotas;
+      const pagadas      = c.cuotas.filter(q => q.pagada).length;
+      const pendientes   = c.cuotas.filter(q => !q.pagada).length;
+      const cobrado      = pagadas * intPorCuota;
+      const pendiente    = pendientes * intPorCuota;
+      const progreso     = c.numCuotas > 0 ? Math.round((pagadas / c.numCuotas) * 100) : 0;
+      const hayVencidas  = c.cuotas.some(q => !q.pagada && isVencida(q.fechaPago));
+      const barColor     = progreso === 100 ? 'var(--success)' : (hayVencidas ? 'var(--danger)' : 'var(--gold)');
+      return `<tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div class="client-avatar" style="width:32px;height:32px;font-size:12px;cursor:pointer" onclick="viewClient('${c.id}');showPage('detail')">${initials(c.nombre)}</div>
+            <div>
+              <div style="font-weight:500;font-size:13px">${c.nombre}</div>
+              <div style="font-size:11px;color:var(--text3)">${fmtDate(c.fechaPrestamo)}</div>
+            </div>
+          </div>
+        </td>
+        <td style="font-weight:500">${fmt(c.monto)}</td>
+        <td style="color:var(--gold);font-weight:500">${fmt(intPorCuota)}</td>
+        <td style="font-weight:700;color:var(--accent)">${fmt(c.totalIntereses)}</td>
+        <td style="color:var(--success);font-weight:500">${fmt(cobrado)}</td>
+        <td style="color:${pendiente > 0 ? 'var(--gold)' : 'var(--text3)'};font-weight:500">${fmt(pendiente)}</td>
+        <td style="min-width:110px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:${progreso}%;background:${barColor}"></div></div>
+            <span style="font-size:11px;color:var(--text3);min-width:28px">${progreso}%</span>
+          </div>
+        </td>
+      </tr>`;
+    }).join('');
+
+    tfoot.innerHTML = `<tr style="background:var(--surface2)">
+      <td colspan="3" style="font-weight:600;font-size:12px;padding:11px 16px">TOTALES (${clients.length} cliente${clients.length!==1?'s':''})</td>
+      <td style="font-weight:700;padding:11px 16px;color:var(--accent)">${fmt(intPactado)}</td>
+      <td style="font-weight:700;padding:11px 16px;color:var(--success)">${fmt(intCobrados)}</td>
+      <td style="font-weight:700;padding:11px 16px;color:var(--gold)">${fmt(intPendientes)}</td>
+      <td style="padding:11px 16px"></td>
+    </tr>`;
+  }
+
+  // Últimos clientes
+  const list = document.getElementById('dashboard-list');
+  const recent = clients.slice(0, 5);
+  if (recent.length === 0) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="emoji">📋</div>
+      <h3>Sin préstamos registrados</h3>
+      <p>Ve a "Clientes" para agregar tu primer préstamo.</p>
+    </div>`;
+    return;
+  }
+  list.innerHTML = recent.map(c => clientRowHTML(c)).join('');
+}
+
+/* ============================================================
+   RENDERIZADO: LISTA DE CLIENTES
+   ============================================================ */
+function renderClients() {
+  const search = (document.getElementById('search-input').value || '').toLowerCase();
+  const filterStatus = document.getElementById('filter-status').value;
+
+  let clients = state.clients.filter(c => {
+    const matchSearch = c.nombre.toLowerCase().includes(search) ||
+                        (c.telefono || '').toLowerCase().includes(search);
+    const cuotasPendientes = c.cuotas.filter(q => !q.pagada).length;
+    const matchStatus = !filterStatus ||
+      (filterStatus === 'activo' && cuotasPendientes > 0) ||
+      (filterStatus === 'completo' && cuotasPendientes === 0);
+    return matchSearch && matchStatus;
+  });
+
+  const listEl = document.getElementById('clients-list');
+  if (clients.length === 0) {
+    listEl.innerHTML = `<div class="empty-state">
+      <div class="emoji">🔍</div>
+      <h3>No se encontraron clientes</h3>
+      <p>${search ? 'Intenta con otro término de búsqueda.' : 'Agrega tu primer cliente con el botón de arriba.'}</p>
+    </div>`;
+    return;
+  }
+  listEl.innerHTML = clients.map(c => clientRowHTML(c)).join('');
+}
+
+function clientRowHTML(c) {
+  const cuotasPendientes = c.cuotas.filter(q => !q.pagada).length;
+  const cuotasPagadas    = c.cuotas.filter(q => q.pagada).length;
+  const progreso = Math.round((cuotasPagadas / c.cuotas.length) * 100);
+  const hayVencidas = c.cuotas.some(q => !q.pagada && isVencida(q.fechaPago));
+
+  let badgeHTML;
+  if (cuotasPendientes === 0) {
+    badgeHTML = `<span class="badge badge-success">✓ Completado</span>`;
+  } else if (hayVencidas) {
+    badgeHTML = `<span class="badge badge-danger">⚠ Con mora</span>`;
+  } else {
+    badgeHTML = `<span class="badge badge-warning">${cuotasPendientes} cuota${cuotasPendientes>1?'s':''} pendiente${cuotasPendientes>1?'s':''}</span>`;
+  }
+
+  return `<div class="client-row" onclick="viewClient('${c.id}')">
+    <div class="client-avatar">${initials(c.nombre)}</div>
+    <div class="client-info">
+      <div class="client-name">${c.nombre}</div>
+      <div class="client-meta">${c.telefono || 'Sin teléfono'} · Desde ${fmtDate(c.fechaPrestamo)}</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        ${badgeHTML}
+        <div style="flex:1;max-width:120px">
+          <div class="progress-bar"><div class="progress-fill" style="width:${progreso}%"></div></div>
+        </div>
+        <span style="font-size:11px;color:var(--text3)">${progreso}%</span>
+      </div>
+    </div>
+    <div class="client-amount">
+      <div class="client-amount-val">${fmt(c.monto)}</div>
+      <div class="client-amount-lbl">Capital prestado</div>
+    </div>
+    <div class="client-actions">
+      <button class="btn btn-outline btn-sm btn-icon" title="Editar" onclick="event.stopPropagation();quickEdit('${c.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="btn btn-danger btn-sm btn-icon" title="Eliminar" onclick="event.stopPropagation();quickDelete('${c.id}')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M9,6V4h6v2"/></svg>
+      </button>
+    </div>
+  </div>`;
+}
+
+function viewClient(id) {
+  state.currentClientId = id;
+  showPage('detail');
+}
+
+function quickEdit(id) {
+  state.currentClientId = id;
+  editCurrentClient();
+}
+
+function quickDelete(id) {
+  state.currentClientId = id;
+  deleteCurrentClient();
+}
+
+/* ============================================================
+   RENDERIZADO: DETALLE DE CLIENTE
+   ============================================================ */
+function renderDetail() {
+  const client = state.clients.find(c => c.id === state.currentClientId);
+  if (!client) { showPage('clients'); return; }
+
+  const cuotasPagadas    = client.cuotas.filter(q => q.pagada).length;
+  const cuotasPendientes = client.cuotas.filter(q => !q.pagada).length;
+  const totalPagado      = client.cuotas.filter(q => q.pagada).reduce((s,q) => s + q.cuota, 0);
+  const totalPendiente   = client.cuotas.filter(q => !q.pagada).reduce((s,q) => s + q.cuota, 0);
+  const progreso = Math.round((cuotasPagadas / client.cuotas.length) * 100);
+
+  // Generar filas de cuotas
+  const filasHTML = client.cuotas.map((q, i) => {
+    const vencida = !q.pagada && isVencida(q.fechaPago);
+    let claseNum = '';
+    if (q.pagada) claseNum = 'pagada';
+    else if (vencida) claseNum = 'vencida';
+
+    let estadoBadge;
+    if (q.pagada) {
+      estadoBadge = `<span class="badge badge-success">✓ Pagada${q.fechaPagada ? ' · ' + fmtDate(q.fechaPagada) : ''}</span>`;
+    } else if (vencida) {
+      estadoBadge = `<span class="badge badge-danger">⚠ Vencida</span>`;
+    } else {
+      estadoBadge = `<span class="badge badge-warning">Pendiente</span>`;
+    }
+
+    const btnPagar = q.pagada
+      ? `<button class="check-btn desmarcar" onclick="toggleCuota('${client.id}',${i})">↩ Desmarcar</button>`
+      : `<button class="check-btn pagar" onclick="toggleCuota('${client.id}',${i})">✓ Marcar pagada</button>`;
+
+    return `<tr>
+      <td><span class="cuota-num ${claseNum}">${q.numero}</span></td>
+      <td>${fmtDate(q.fechaPago)}</td>
+      <td>${fmt(q.cuota)}</td>
+      <td>${fmt(q.capital)}</td>
+      <td>${fmt(q.interes)}</td>
+      <td>${estadoBadge}</td>
+      <td>${btnPagar}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('detail-content').innerHTML = `
+    <div class="client-detail-header">
+      <div class="detail-avatar">${initials(client.nombre)}</div>
+      <div class="detail-info">
+        <h3>${client.nombre}</h3>
+        <p>${client.telefono || 'Sin teléfono'}</p>
+        <p style="margin-top:4px">Préstamo desde ${fmtDate(client.fechaPrestamo)}</p>
+      </div>
+    </div>
+
+    <!-- Métricas del préstamo -->
+    <div class="info-grid">
+      <div class="info-cell">
+        <div class="info-cell-lbl">Capital prestado</div>
+        <div class="info-cell-val">${fmt(client.monto)}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Total a pagar</div>
+        <div class="info-cell-val">${fmt(client.totalPagar)}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Valor cuota</div>
+        <div class="info-cell-val">${fmt(client.cuotaFija)}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Intereses totales</div>
+        <div class="info-cell-val">${fmt(client.totalIntereses)}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Total pagado</div>
+        <div class="info-cell-val" style="color:var(--success)">${fmt(totalPagado)}</div>
+      </div>
+      <div class="info-cell">
+        <div class="info-cell-lbl">Total pendiente</div>
+        <div class="info-cell-val" style="color:var(--gold)">${fmt(totalPendiente)}</div>
+      </div>
+    </div>
+
+    <!-- Progreso general -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="flex justify-between items-center" style="margin-bottom:10px">
+        <span style="font-size:14px;font-weight:500">Progreso del préstamo</span>
+        <span style="font-size:13px;color:var(--text2)">${cuotasPagadas} de ${client.cuotas.length} cuotas</span>
+      </div>
+      <div class="progress-bar" style="height:10px">
+        <div class="progress-fill" style="width:${progreso}%"></div>
+      </div>
+      <div class="flex justify-between mt-8">
+        <span class="text-sm text-muted">${progreso}% completado</span>
+        <span class="text-sm text-muted">${cuotasPendientes} cuota${cuotasPendientes!==1?'s':''} pendiente${cuotasPendientes!==1?'s':''}</span>
+      </div>
+    </div>
+
+    <!-- Tabla de cuotas -->
+    <div class="section-title">Plan de pagos</div>
+    <div class="cuotas-wrap">
+      <table class="cuotas-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Fecha de pago</th>
+            <th>Valor cuota</th>
+            <th>Capital</th>
+            <th>Interés</th>
+            <th>Estado</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>${filasHTML}</tbody>
+        <tfoot>
+          <tr style="background:var(--surface2)">
+            <td colspan="2" style="font-weight:600;font-size:13px;padding:12px 16px">TOTALES</td>
+            <td style="font-weight:600;padding:12px 16px">${fmt(client.totalPagar)}</td>
+            <td style="font-weight:600;padding:12px 16px">${fmt(client.monto)}</td>
+            <td style="font-weight:600;padding:12px 16px">${fmt(client.totalIntereses)}</td>
+            <td colspan="2" style="padding:12px 16px">
+              <span class="badge badge-${cuotasPendientes===0?'success':'neutral'}">${cuotasPendientes===0?'✓ Saldado':'En curso'}</span>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  `;
+}
+
+/* ============================================================
+   MODALES (abrir / cerrar)
+   ============================================================ */
+function openModal(id) {
+  document.getElementById(id).classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+  document.body.style.overflow = '';
+}
+// Cerrar modal al hacer click fuera (en el overlay oscuro)
+document.addEventListener('click', e => {
+  ['modal-client', 'modal-confirm'].forEach(id => {
+    const overlay = document.getElementById(id);
+    if (!overlay.classList.contains('hidden') && e.target === overlay) {
+      closeModal(id);
+    }
+  });
+});
+
+/* ============================================================
+   TOAST DE NOTIFICACIONES
+   ============================================================ */
+function showToast(msg, type = 'success') {
+  const toast = document.getElementById('toast');
+  toast.style.background = type === 'error' ? 'var(--danger)' : 'var(--accent)';
+  toast.innerHTML = `${type === 'error' ? '⚠' : '✓'} ${msg}`;
+  toast.style.transform = 'translateY(0)';
+  toast.style.opacity = '1';
+  setTimeout(() => {
+    toast.style.transform = 'translateY(80px)';
+    toast.style.opacity = '0';
+  }, 3000);
+}
+
+/* ============================================================
+   RENDERIZADO: PÁGINA DE PAGADOS
+   ============================================================ */
+function renderIntereses() {
+  // Solo clientes con TODAS las cuotas pagadas
+  const pagados = state.clients.filter(c => c.cuotas.every(q => q.pagada));
+
+  let totalCapital   = 0;
+  let totalIntereses = 0;
+
+  pagados.forEach(c => {
+    totalCapital   += c.monto;
+    totalIntereses += c.totalIntereses;
+  });
+
+  const totalRecaudado = totalCapital + totalIntereses;
+
+  // Tarjetas
+  document.getElementById('pag-total-clientes').textContent = pagados.length;
+  document.getElementById('pag-capital').textContent        = fmt(totalCapital);
+  document.getElementById('pag-intereses').textContent      = fmt(totalIntereses);
+  document.getElementById('pag-total').textContent          = fmt(totalRecaudado);
+
+  // Lista de clientes pagados
+  const listEl = document.getElementById('pagados-list');
+
+  if (pagados.length === 0) {
+    listEl.innerHTML = `<div class="empty-state">
+      <div class="emoji">🏆</div>
+      <h3>Aún no hay clientes pagados</h3>
+      <p>Cuando un cliente pague todas sus cuotas, aparecerá aquí automáticamente.</p>
+    </div>`;
+    return;
+  }
+
+  listEl.innerHTML = pagados.map(c => {
+    // Fecha del último pago
+    const fechas = c.cuotas.map(q => q.fechaPagada).filter(Boolean).sort();
+    const ultimoPago = fechas.length ? fmtDate(fechas[fechas.length - 1]) : '—';
+
+    return `<div class="client-row" onclick="viewClient('${c.id}');showPage('detail')" style="border-left:4px solid var(--success)">
+      <div class="client-avatar" style="border-color:var(--success);color:var(--success);background:var(--success-lt)">${initials(c.nombre)}</div>
+      <div class="client-info">
+        <div class="client-name">${c.nombre}</div>
+        <div class="client-meta">
+          ${c.telefono || 'Sin teléfono'} · Préstamo desde ${fmtDate(c.fechaPrestamo)} · Último pago: ${ultimoPago}
+        </div>
+        <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+          <span class="badge badge-success">✓ Saldado completamente</span>
+          <span style="font-size:11px;color:var(--text3)">${c.numCuotas} cuota${c.numCuotas!==1?'s':''}</span>
+        </div>
+      </div>
+      <div class="client-amount" style="text-align:right">
+        <div class="client-amount-val" style="color:var(--success)">${fmt(c.totalPagar)}</div>
+        <div class="client-amount-lbl">Total pagado</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">Intereses: ${fmt(c.totalIntereses)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   INICIALIZACIÓN
+   ============================================================ */
+// Todo listo — la app se inicializa en DOMContentLoaded (arriba)
+</script>
+</body>
+</html>
