@@ -1,17 +1,34 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, push, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
 /* ============================================================
-   CONFIGURACIÓN Y CONSTANTES
+   CONFIGURACIÓN FIREBASE
+   ============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAt5NVq2QPRw77jYcGtWxyerSADSFoGAks",
+  authDomain: "automatizacion-mora.firebaseapp.com",
+  databaseURL: "https://automatizacion-mora-default-rtdb.firebaseio.com",
+  projectId: "automatizacion-mora",
+  storageBucket: "automatizacion-mora.firebasestorage.app",
+  messagingSenderId: "1029119076229",
+  appId: "1:1029119076229:web:2403c259902d43f7f186ec",
+  measurementId: "G-3QV9NKRLYB"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const clientsRef = ref(db, 'clients');
+
+/* ============================================================
+   CONFIGURACIÓN APP
    ============================================================ */
 const CONFIG = {
   USUARIO: 'admin',
   PASSWORD: '1234',
-  INTERES_MENSUAL: 0.20,  // 20% mensual fijo
-  STORAGE_KEY: 'prestamo_app_data',
+  INTERES_MENSUAL: 0.20,
   SESSION_KEY: 'prestamo_session'
 };
 
-/* ============================================================
-   ESTADO DE LA APP
-   ============================================================ */
 let state = {
   clients: [],
   currentClientId: null,
@@ -20,15 +37,65 @@ let state = {
 };
 
 /* ============================================================
-   ALMACENAMIENTO LOCAL (localStorage)
+   SINCRONIZACIÓN EN TIEMPO REAL
    ============================================================ */
-function saveData() {
-  localStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(state.clients));
+onValue(clientsRef, (snapshot) => {
+  const data = snapshot.val();
+  if (data) {
+    // Convertir objeto de Firebase a array
+    state.clients = Object.keys(data).map(key => ({
+      ...data[key],
+      id: key
+    }));
+  } else {
+    state.clients = [];
+  }
+  
+  // Re-renderizar la vista actual
+  refreshCurrentView();
+});
+
+function refreshCurrentView() {
+  if (!document.getElementById('dashboard-page').classList.contains('hidden')) renderDashboard();
+  if (!document.getElementById('clients-page').classList.contains('hidden')) renderClients();
+  if (!document.getElementById('detail-page').classList.contains('hidden')) renderDetail();
+  if (!document.getElementById('intereses-page').classList.contains('hidden')) renderIntereses();
 }
 
-function loadData() {
-  const raw = localStorage.getItem(CONFIG.STORAGE_KEY);
-  if (raw) state.clients = JSON.parse(raw);
+/* ============================================================
+   ESCRIBIENDO EN LA NUBE
+   ============================================================ */
+function saveClientToCloud(clientData) {
+  if (state.editMode && state.editId) {
+    const itemRef = ref(db, `clients/${state.editId}`);
+    return update(itemRef, clientData);
+  } else {
+    const newClientRef = push(clientsRef);
+    return set(newClientRef, {
+      ...clientData,
+      creadoEn: new Date().toISOString()
+    });
+  }
+}
+
+function deleteClientFromCloud(id) {
+  const itemRef = ref(db, `clients/${id}`);
+  return remove(itemRef);
+}
+
+function toggleCuotaInCloud(clientId, cuotaIndex) {
+  const client = state.clients.find(c => c.id === clientId);
+  if (!client) return;
+  
+  const cuota = client.cuotas[cuotaIndex];
+  const nuevoEstado = !cuota.pagada;
+  const nuevaFecha = nuevoEstado ? new Date().toISOString().split('T')[0] : null;
+  
+  const updates = {};
+  updates[`/clients/${clientId}/cuotas/${cuotaIndex}/pagada`] = nuevoEstado;
+  updates[`/clients/${clientId}/cuotas/${cuotaIndex}/fechaPagada`] = nuevaFecha;
+  
+  return update(ref(db), updates);
 }
 
 /* ============================================================
@@ -82,20 +149,19 @@ function showApp(username) {
   document.getElementById('sidebar-username').textContent = username;
   const abbr = username.substring(0, 2).toUpperCase();
   document.getElementById('user-avatar-abbr').textContent = abbr;
-  // Sincronizar header y menú móvil
   const mobUserBtn = document.getElementById('mobile-user-btn');
   if (mobUserBtn) mobUserBtn.textContent = abbr;
   const menuUsernameMob = document.getElementById('menu-username-mob');
   if (menuUsernameMob) menuUsernameMob.textContent = username;
   
-  loadData();
+  // onValue ya se encarga de cargar los datos
   showPage('dashboard');
 }
 
 /* ============================================================
    NAVEGACIÓN DE PÁGINAS
    ============================================================ */
-function showPage(page) {
+window.showPage = function(page) {
   ['dashboard-page','clients-page','detail-page','intereses-page'].forEach(p => {
     const el = document.getElementById(p);
     if (el) el.classList.add('hidden');
@@ -127,23 +193,21 @@ function showPage(page) {
     renderIntereses();
   }
   closeSidebar();
-  const userMenu = document.getElementById('mobile-user-menu');
-  if (userMenu) userMenu.classList.remove('show');
 }
 
-function toggleSidebar() {
+window.toggleSidebar = function() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
   if (sb) sb.classList.toggle('open');
   if (ov) ov.classList.toggle('show');
 }
-function closeSidebar() {
+window.closeSidebar = function() {
   const sb = document.getElementById('sidebar');
   const ov = document.getElementById('sidebar-overlay');
   if (sb) sb.classList.remove('open');
   if (ov) ov.classList.remove('show');
 }
-function toggleUserMenu() {
+window.toggleUserMenu = function() {
   const menu = document.getElementById('mobile-user-menu');
   if (menu) menu.classList.toggle('show');
 }
@@ -206,7 +270,7 @@ function isVencida(dateStr) {
 function numberWithCommas(n) {
   return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
-function formatMontoInput(input) {
+window.formatMontoInput = function(input) {
   const digits = input.value.replace(/[^0-9]/g, '');
   if (digits === '') { input.value = ''; return; }
   input.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -215,7 +279,7 @@ function formatMontoInput(input) {
 /* ============================================================
    MÓDULO DE CLIENTES
    ============================================================ */
-function recalcPreview() {
+window.recalcPreview = function() {
   const montoRaw = document.getElementById('f-monto').value.replace(/[^0-9]/g, '');
   const monto = parseFloat(montoRaw) || 0;
   const cuotas = parseInt(document.getElementById('f-cuotas').value) || 0;
@@ -232,7 +296,7 @@ function recalcPreview() {
   }
 }
 
-function openAddModal() {
+window.openAddModal = function() {
   state.editMode = false;
   state.editId = null;
   document.getElementById('modal-client-title').textContent = 'Nuevo cliente';
@@ -245,7 +309,7 @@ function openAddModal() {
   openModal('modal-client');
 }
 
-function saveClient() {
+window.saveClient = function() {
   const nombre = document.getElementById('f-nombre').value.trim();
   const telefono = document.getElementById('f-tel').value.trim();
   const montoRaw = document.getElementById('f-monto').value.replace(/[^0-9]/g, '');
@@ -260,44 +324,19 @@ function saveClient() {
   }
 
   const calc = calcularPrestamo(monto, numCuotas, fechaPrestamo, frecuencia);
+  
+  const clientData = {
+    nombre, telefono, monto, numCuotas, fechaPrestamo, frecuencia,
+    cuotaFija: calc.cuotaFija,
+    totalPagar: calc.totalPagar,
+    totalIntereses: calc.totalIntereses,
+    cuotas: calc.cuotas
+  };
 
-  if (state.editMode && state.editId) {
-    const idx = state.clients.findIndex(c => c.id === state.editId);
-    if (idx !== -1) {
-      const oldCuotas = state.clients[idx].cuotas;
-      state.clients[idx] = {
-        ...state.clients[idx],
-        nombre, telefono, monto, numCuotas, fechaPrestamo, frecuencia,
-        cuotaFija: calc.cuotaFija,
-        totalPagar: calc.totalPagar,
-        totalIntereses: calc.totalIntereses,
-        cuotas: calc.cuotas.map((c, i) => ({
-          ...c,
-          pagada: (oldCuotas[i] && oldCuotas[i].pagada) || false,
-          fechaPagada: (oldCuotas[i] && oldCuotas[i].fechaPagada) || null
-        }))
-      };
-      showToast('Cliente actualizado correctamente.');
-    }
-  } else {
-    const newClient = {
-      id: Date.now().toString(),
-      nombre, telefono, monto, numCuotas, fechaPrestamo, frecuencia,
-      cuotaFija: calc.cuotaFija,
-      totalPagar: calc.totalPagar,
-      totalIntereses: calc.totalIntereses,
-      cuotas: calc.cuotas,
-      creadoEn: new Date().toISOString()
-    };
-    state.clients.unshift(newClient);
-    showToast('Cliente agregado correctamente.');
-  }
-
-  saveData();
-  closeModal('modal-client');
-  if (state.currentClientId) renderDetail();
-  if (!document.getElementById('clients-page').classList.contains('hidden')) renderClients();
-  renderDashboard();
+  saveClientToCloud(clientData).then(() => {
+    showToast(state.editMode ? 'Cliente actualizado' : 'Cliente agregado');
+    closeModal('modal-client');
+  }).catch(e => showToast('Error al guardar', 'error'));
 }
 
 /* ============================================================
@@ -340,7 +379,7 @@ function renderDashboard() {
         const pagadas = c.cuotas.filter(q => q.pagada).length;
         const progreso = c.numCuotas > 0 ? Math.round((pagadas / c.numCuotas) * 100) : 0;
         return `<tr>
-          <td><div class="flex items-center gap-8"><div class="client-avatar" style="width:32px;height:32px;font-size:12px" onclick="viewClient('${c.id}')">${initials(c.nombre)}</div><div><div class="font-500">${c.nombre}</div><div class="text-xs text-muted">${fmtDate(c.fechaPrestamo)}</div></div></div></td>
+          <td><div class="flex items-center gap-8"><div class="client-avatar" style="width:32px;height:32px;font-size:12px;cursor:pointer" onclick="viewClient('${c.id}')">${initials(c.nombre)}</div><div><div class="font-500">${c.nombre}</div><div class="text-xs text-muted">${fmtDate(c.fechaPrestamo)}</div></div></div></td>
           <td class="font-500">${fmt(c.monto)}</td>
           <td style="color:var(--gold)">${fmt(intPorCuota)}</td>
           <td class="font-600">${fmt(c.totalIntereses)}</td>
@@ -359,7 +398,7 @@ function renderDashboard() {
   }
 }
 
-function renderClients() {
+window.renderClients = function() {
   const search = (document.getElementById('search-input').value || '').toLowerCase();
   const filterStatus = document.getElementById('filter-status').value;
 
@@ -396,7 +435,7 @@ function clientRowHTML(c) {
   </div>`;
 }
 
-function viewClient(id) {
+window.viewClient = function(id) {
   state.currentClientId = id;
   showPage('detail');
 }
@@ -406,19 +445,58 @@ function renderDetail() {
   if (!client) return;
   const detail = document.getElementById('detail-content');
   if (detail) {
-    const pagadas = client.cuotas.filter(q => q.pagada).length;
+    const cuotasPagadas = client.cuotas.filter(q => q.pagada).length;
+    const progreso = Math.round((cuotasPagadas / client.cuotas.length) * 100);
+
+    const filasHTML = client.cuotas.map((q, i) => {
+      const btnPagar = q.pagada
+        ? `<button class="btn btn-outline btn-sm" onclick="toggleCuota('${client.id}',${i})">↩ Desmarcar</button>`
+        : `<button class="btn btn-primary btn-sm" onclick="toggleCuota('${client.id}',${i})">✓ Pagar</button>`;
+      return `<tr>
+        <td style="padding:10px;">${q.numero}</td>
+        <td style="padding:10px;">${fmtDate(q.fechaPago)}</td>
+        <td style="padding:10px;">${fmt(q.cuota)}</td>
+        <td style="padding:10px;">${q.pagada ? '✅ Pagada' : '⏳ Pendiente'}</td>
+        <td style="padding:10px;">${btnPagar}</td>
+      </tr>`;
+    }).join('');
+
     detail.innerHTML = `
-      <div class="flex items-center gap-16 mb-24">
-        <div class="client-avatar" style="width:64px;height:64px;font-size:24px">${initials(client.nombre)}</div>
-        <div><h3 class="font-disp" style="font-size:24px">${client.nombre}</h3><p class="text-muted">${client.telefono || 'Sin teléfono'}</p></div>
+      <div class="flex justify-between items-center mb-24">
+        <div class="flex items-center gap-16">
+          <div class="client-avatar" style="width:64px;height:64px;font-size:24px">${initials(client.nombre)}</div>
+          <div><h3 class="font-disp" style="font-size:24px">${client.nombre}</h3><p class="text-muted">${client.telefono || 'Sin teléfono'}</p></div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="deleteClient('${client.id}')">Eliminar Cliente</button>
       </div>
-      <div class="stats-grid">
+      <div class="stats-grid mb-24">
         <div class="stat-card"><div class="stat-label">Capital</div><div class="stat-value">${fmt(client.monto)}</div></div>
         <div class="stat-card"><div class="stat-label">Total a Pagar</div><div class="stat-value">${fmt(client.totalPagar)}</div></div>
-        <div class="stat-card"><div class="stat-label">Cuota</div><div class="stat-value">${fmt(client.cuotaFija)}</div></div>
-        <div class="stat-card"><div class="stat-label">Intereses</div><div class="stat-value">${fmt(client.totalIntereses)}</div></div>
+        <div class="stat-card"><div class="stat-label">Valor Cuota</div><div class="stat-value">${fmt(client.cuotaFija)}</div></div>
+        <div class="stat-card"><div class="stat-label">Progreso</div><div class="stat-value">${progreso}%</div></div>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden;">
+        <table class="w-full" style="border-collapse:collapse; font-size:13px;">
+          <thead style="background:var(--surface2); border-bottom:1px solid var(--border);">
+            <tr><th style="padding:10px;text-align:left;">#</th><th style="padding:10px;text-align:left;">Fecha</th><th style="padding:10px;text-align:left;">Cuota</th><th style="padding:10px;text-align:left;">Estado</th><th style="padding:10px;text-align:left;">Acción</th></tr>
+          </thead>
+          <tbody>${filasHTML}</tbody>
+        </table>
       </div>
     `;
+  }
+}
+
+window.toggleCuota = function(clientId, index) {
+  toggleCuotaInCloud(clientId, index).then(() => showToast('Estado actualizado'));
+}
+
+window.deleteClient = function(id) {
+  if (confirm('¿Estás seguro de eliminar este cliente?')) {
+    deleteClientFromCloud(id).then(() => {
+      showToast('Cliente eliminado');
+      showPage('clients');
+    });
   }
 }
 
@@ -433,11 +511,13 @@ function renderIntereses() {
 /* ============================================================
    MODALES Y TOASTS
    ============================================================ */
-function openModal(id) {
-  document.getElementById(id).classList.remove('hidden');
+window.openModal = function(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.remove('hidden');
 }
-function closeModal(id) {
-  document.getElementById(id).classList.add('hidden');
+window.closeModal = function(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('hidden');
 }
 function showToast(msg, type = 'success') {
   const toast = document.getElementById('toast');
@@ -459,4 +539,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   const passInp = document.getElementById('inp-pass');
   if (passInp) passInp.addEventListener('keydown', e => e.key === 'Enter' && doLogin());
+  
+  // Exponer funciones globales para botones inline
+  window.doLogin = doLogin;
+  window.doLogout = doLogout;
 });
