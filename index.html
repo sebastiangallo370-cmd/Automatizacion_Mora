@@ -13,6 +13,10 @@
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="src/css/style.css">
+
+    <!-- Firebase Compat (funciona sin servidor local) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -144,6 +148,11 @@
           <div class="stat-icon purple">✅</div>
           <div class="stat-label">Cuotas Cobradas</div>
           <div class="stat-value" id="stat-cuotas-cobradas">$0</div>
+        </div>
+        <div class="stat-card" style="border-color:var(--gold);">
+          <div class="stat-icon gold">🔄</div>
+          <div class="stat-label">Capital en Proceso</div>
+          <div class="stat-value" id="stat-capital-proceso">$0</div>
         </div>
       </div>
 
@@ -278,6 +287,6 @@
 <div id="toast" style="position:fixed; bottom:24px; right:24px; z-index:999; padding:12px 20px; border-radius:12px; color:#fff; font-size:14px; opacity:0; transform:translateY(80px); transition:all 0.3s ease;"></div>
 
 <!-- Core logic -->
-<script type="module" src="src/js/app.js"></script>
+<script src="src/js/app.js"></script>
 </body>
 </html>
